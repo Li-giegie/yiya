@@ -18,11 +18,6 @@ func RunTunnelServer(addr string) error {
 	return s.Serve(l)
 }
 
-var (
-	handshakeRequest  = "Are you ok?"
-	handshakeResponse = "I'm fine, thanks."
-)
-
 type TunnelServer struct{}
 
 func (t TunnelServer) Serve(l net.Listener) error {

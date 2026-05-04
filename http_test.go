@@ -133,17 +133,16 @@ func TestName(t *testing.T) {
 	}()
 
 	dialer := net.Dialer{
-		Timeout:         0,
-		Deadline:        time.Time{},
-		LocalAddr:       nil,
-		DualStack:       false,
-		FallbackDelay:   0,
-		KeepAlive:       time.Second * 5,
-		KeepAliveConfig: net.KeepAliveConfig{},
-		Resolver:        nil,
-		Cancel:          nil,
-		Control:         nil,
-		ControlContext:  nil,
+		Timeout:        0,
+		Deadline:       time.Time{},
+		LocalAddr:      nil,
+		DualStack:      false,
+		FallbackDelay:  0,
+		KeepAlive:      time.Second * 5,
+		Resolver:       nil,
+		Cancel:         nil,
+		Control:        nil,
+		ControlContext: nil,
 	}
 	conn, err := dialer.Dial("tcp", "127.0.0.1:9000")
 	if err != nil {

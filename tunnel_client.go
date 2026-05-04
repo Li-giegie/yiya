@@ -95,7 +95,6 @@ func (s *TunnelClient) Handle(conn net.Conn, session *netx.Session) {
 		log.Println("failed to write tunnel-server:", err)
 		return
 	}
-	log.Println("发送主机域名到上游成功")
 	connectReply, err := session.ReadChunk()
 	if err != nil {
 		log.Println("读取上游响应CONNECT失败", err)
@@ -108,13 +107,11 @@ func (s *TunnelClient) Handle(conn net.Conn, session *netx.Session) {
 				log.Println("发送第一条HTTP报文失败：", err)
 				return
 			}
-			log.Println("建立CONNECT成功")
 		} else {
 			if _, err = session.Write(h.buffer); err != nil {
 				log.Println("转发第一条HTTP报文失败", err)
 				return
 			}
-			log.Println("HTTP报文转发成功")
 		}
 	case Code500, Code502, Code503:
 		conn.Write([]byte(code.String(h.Proto)))

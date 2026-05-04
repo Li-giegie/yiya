@@ -1,6 +1,10 @@
-# YIYA 是一个隧道代理工具，提供安全（TLS）隧道代理功能
+# YIYA 
+是一个 ``HTTP/HTTPS`` 隧道代理工具，提供多个模式隧道代理功能，隧道由客户端和服务端构成，客户端负责转发到服务端，服务端负责转发实际请求
 
-一共两种代理模式，分别是 不加密代理隧道，此模式请求明文从代理客户端传输到代理服务端可能会被防火墙拦截、自签名双向证书mTLS加代理密隧道，此模式请求会被加密传输到代理服务端，只要不泄露根证书100%安全，无懈可击
+## 代理模式
+1. 不加密 隧道
+2. XOR 加密隧道：使用一对相同的秘钥加解密字节流，秘钥容易被分析
+3. mTLS 加密隧道：使用TLS双向认证模式，不泄露根证书绝对安全
 
 ## 安装
 ```shell
@@ -8,26 +12,40 @@ go install github.com/Li-giegie/yiya
 ```
 
 ## 快速开始
+开始之前，请确保已安装 ``yiya`` 可执行程序，进入源码目录。
+
+启动成功后配置系统代理地址到代理客户端侦听的地址 不管是HTTP还是HTTPS 都配置成 ``127.0.0.1:1080`` 
+
+浏览器ZeroOmega插件配置如图
+![img.png](img.png)
+
 ### 1. 不加密代理隧道
-1. 启动隧道 服务端 默认服务端侦听 ``127.0.0.1:1081``
+1. 启动服务端 默认服务端侦听 ``127.0.0.1:1081``
     ```shell
-    go run ./
+    .\yiya.exe -server
     ```
-2. 启动隧道 客户端 默认侦听 ``127.0.0.1:1080``
+2. 启动客户端 默认侦听 ``127.0.0.1:1080``
     ```shell
-    go run ./ -mode client
+    .\yiya.exe
     ```
-### 2. 自签名双向证书mTLS加代理密隧道
-1. 启动隧道服务端
+### 2. mTLS加密隧道
+1. 启动服务端
     ```shell
-    go run ./ -mTLS -rootCertFile .\x509\m
-    TLS\ca.crt -certFile .\x509\mTLS\server.crt -keyFile .\x509\mTLS\server.key
+    .\yiya.exe -server -mTLS -rootCertFile .\x509\mTLS\ca.crt -certFile .\x509\mTLS\server.crt -keyFile .\x509\mTLS\server.key
     ```
-2. 启动隧道客户端
+2. 启动客户端
     ```shell
-    go run ./ -mode client -mTLS -rootCert
-    File .\x509\mTLS\ca.crt -certFile .\x509\mTLS\client.crt  -keyFile .\x509\mTLS\client.key
+    .\yiya.exe -mTLS -rootCertFile .\x509\mTLS\ca.crt -certFile .\x509\mTLS\client.crt -keyFile .\x509\mTLS\client.key
     ```
+### 3. XOR 加密隧道
+1. 启动服务端
+   ```shell
+   .\yiya.exe -server -xor -key 123456
+   ```
+2. 启动客户端
+   ```shell
+   .\yiya.exe -xor -key 123456
+   ```
 ## 生成自签双向认证mTLS证书
 在执行命令前，请确保已经安装Openssl
 ### 第1步：生成根 CA（用于签发所有证书）
