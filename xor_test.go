@@ -1,68 +1,41 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net"
-	"strconv"
+	"bytes"
+	"io"
 	"testing"
-	"time"
 )
 
 func TestXOR(t *testing.T) {
-	listen, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		t.Fatal(err)
+	buf := new(bytes.Buffer)
+	w := NewXORWriter(buf, []byte("123456"))
+	n, err := w.Write([]byte("123"))
+	if n != 3 || err != nil {
+		t.Fatal("fail", n, err)
 	}
-	fmt.Println(listen.Addr().String())
-	defer listen.Close()
-	go func() {
-		for {
-			conn, err := listen.Accept()
-			if err != nil {
-				t.Fatal(err)
-				return
+
+	n, err = w.Write([]byte("hahaha"))
+	if n != 6 || err != nil {
+		t.Fatal("fail", n, err)
+	}
+
+	r := NewXORReader(buf, []byte("123456"))
+
+	b := make([]byte, 0, 64)
+	for {
+		n, err = r.Read(b[len(b):cap(b)])
+		b = b[:len(b)+n]
+		if err != nil {
+			if err != io.EOF {
+				t.Fatal("fail", err)
 			}
-			go func() {
-				conn = NewXorConn(conn, []byte("123456"))
-				defer conn.Close()
-
-				buf := make([]byte, 1024)
-				for {
-					n, err := conn.Read(buf)
-					if err != nil {
-						log.Println("read error:", err)
-						return
-					}
-					println("server read", string(buf[:n]))
-					conn.Write([]byte("server receive"))
-					conn.Write(buf[:n])
-				}
-			}()
+			break
 		}
-	}()
-
-	conn, err := net.Dial("tcp", listen.Addr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-	conn = NewXorConn(conn, []byte("123456"))
-	go func() {
-		buf := make([]byte, 1024)
-		for {
-			n, err := conn.Read(buf)
-			if err != nil {
-				log.Println("read error:", err)
-				return
-			}
-			println("client read", string(buf[:n]))
+		if len(b) == cap(b) {
+			b = append(b, 0)[:cap(b)]
 		}
-	}()
-	for i := 0; i < 3; i++ {
-		conn.Write([]byte(strconv.Itoa(i)))
-		conn.Write([]byte(time.Now().String()))
-		time.Sleep(time.Second)
 	}
-
+	if string(b) != "123hahaha" {
+		t.Fatal("fail", string(b))
+	}
 }
