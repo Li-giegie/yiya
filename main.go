@@ -15,8 +15,8 @@ import (
 var (
 	server = flag.Bool("server", false, "true run server,false run client")
 
-	lAddr = flag.String("laddr", "127.0.0.1:1080", "tunnel client listen address")
-	pAddr = flag.String("paddr", "127.0.0.1:1081", "tunnel server listen address")
+	lAddr = flag.String("laddr", "0.0.0.0:1080", "tunnel client listen address")
+	pAddr = flag.String("paddr", "0.0.0.0:1081", "tunnel server listen address")
 
 	mTLS         = flag.Bool("mTLS", false, "enable mTls encrypt tunnel")
 	rootCertFile = flag.String("rootCertFile", "", "CA root Certificate")

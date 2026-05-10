@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"math"
 	"math/rand"
 	"net"
 	"sync"
@@ -58,7 +57,7 @@ func (x *XORWriter) Write(p []byte) (int, error) {
 	if len(p) == 0 {
 		return 0, nil
 	}
-	if len(p) > math.MaxUint32 {
+	if uint64(len(p)) > 0xffffffff {
 		return 0, ErrWriteLong
 	}
 	offset := rand.Uint32()

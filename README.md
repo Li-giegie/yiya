@@ -8,7 +8,7 @@
 
 ## 安装
 ```shell
-go install github.com/Li-giegie/yiya
+go install github.com/Li-giegie/yiya@latest
 ```
 
 ## 快速开始
