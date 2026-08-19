@@ -23,13 +23,13 @@ func (s StatusCode) Valid() bool {
 func (s StatusCode) String(proto string) string {
 	switch s {
 	case Code200:
-		return proto + "200 Connection Established\r\n\r\n"
+		return proto + " 200 Connection Established\r\n\r\n"
 	case Code502:
-		return proto + "502 Bad Gateway\r\nConnection: close\r\n\r\nDNS resolution failed"
+		return proto + " 502 Bad Gateway\r\nConnection: close\r\n\r\nDNS resolution failed"
 	case Code503:
-		return proto + "503 Service Unavailable\r\nConnection: close\r\n\r\nProxy could not connect to destination"
+		return proto + " 503 Service Unavailable\r\nConnection: close\r\n\r\nProxy could not connect to destination"
 	default:
-		return proto + "500 Internal Server Error\r\nConnection: close\r\n\r\n"
+		return proto + " 500 Internal Server Error\r\nConnection: close\r\n\r\n"
 	}
 }
 
