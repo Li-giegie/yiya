@@ -1,10 +1,11 @@
 package main
 
 import (
-	"context"
-	"github.com/Li-giegie/netx"
+	"io"
 	"log"
 	"net"
+
+	"github.com/Li-giegie/netx"
 )
 
 func RunTunnelServer(addr string) error {
@@ -44,41 +45,34 @@ func (t TunnelServer) Handle(r *netx.SessionReader, w *netx.SessionWriter) {
 	}
 	defer upstream.Close()
 	if _, err = w.Write([]byte("200")); err != nil {
-		log.Println("response connect 200 err", err)
+		log.Println("与目的地址建立连接，响应失败", err)
 		return
 	}
-	ctx, cancel := context.WithCancel(context.TODO())
-	defer cancel()
 	go func() {
 		for {
 			data, err = r.ReadChunk()
 			if err != nil {
-				log.Println("read down stream err", err)
-				cancel()
+				log.Println("读取下游失败", err)
 				return
 			}
 			if _, err = upstream.Write(data); err != nil {
-				log.Println("write up stream err", err)
-				cancel()
+				log.Println("写入上游失败", err)
 				return
 			}
 		}
 	}()
-	go func() {
-		buf := make([]byte, 4096)
-		for {
-			n, err := upstream.Read(buf)
-			if err != nil {
+	buf := make([]byte, 4096)
+	for {
+		n, err := upstream.Read(buf)
+		if err != nil {
+			if err != io.EOF {
 				log.Println("读取上游失败", err)
-				cancel()
-				return
 			}
-			if _, err = w.Write(buf[:n]); err != nil {
-				log.Println("写入下游失败", err)
-				cancel()
-				return
-			}
+			return
 		}
-	}()
-	<-ctx.Done()
+		if _, err = w.Write(buf[:n]); err != nil {
+			log.Println("写入下游失败", err)
+			return
+		}
+	}
 }
