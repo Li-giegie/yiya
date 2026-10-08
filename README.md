@@ -46,6 +46,14 @@ go install github.com/Li-giegie/yiya@latest
    ```shell
    .\yiya.exe -xor -key 123456
    ```
+### 4. HTTP/S 正向代理（无隧道）
+1. 无认证模式启动-服务端命令
+    yiya -forwardProxy -laddr 0.0.0.0:1080
+2. Basic 认证模式
+    yiya -forwardProxy  -forwardProxyEnableAuth -laddr 0.0.0.0:1081
+    
+    yiya -forwardProxyUserAuthFileGenerate 生成授权配置文件模板
+    
 ## 生成自签双向认证mTLS证书
 在执行命令前，请确保已经安装Openssl
 ### 第1步：生成根 CA（用于签发所有证书）

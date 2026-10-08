@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"flag"
 	"github.com/Li-giegie/netx"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"time"
 )
@@ -26,13 +28,60 @@ var (
 
 	xor = flag.Bool("xor", false, "enable xor encrypt tunnel")
 	key = flag.String("key", "", "xor key")
+
+	forwardProxy                     = flag.Bool("forwardProxy", false, "enable forward proxy 正向代理模式 支持HTTP/S，示例 yiya -forwardProxy -laddr 0.0.0.0:1080")
+	forwardProxyEnableAuth           = flag.Bool("forwardProxyEnableAuth", false, "enable basic auth")
+	forwardProxyUserAuthFile         = flag.String("forwardProxyUserAuthFile", "./forwardProxyUserAuthFile.json", "forwardProxy user auth json file")
+	forwardProxyUserAuthFileGenerate = flag.Bool("forwardProxyUserAuthFileGenerate", false, "generate forward proxy user auth json file template")
 )
 
 func main() {
 	flag.Parse()
-	log.Printf("config:\nserver: \t%v\nladdr: \t%s\npAddr: \t%s\nmTLS: \t%v\nrootCertFile: \t%s\ncertFile: \t%s\nkeyFile: \t%s\nxor: \t%v\nkey: \t%s\n", *server, *lAddr, *pAddr, *mTLS, *rootCertFile, *certFile, *keyFile, *xor, *key)
-	if *server {
+	log.Printf("config:\nserver: \t%v\nladdr: \t%s\npAddr: \t%s\nmTLS: \t%v\nrootCertFile: \t%s\ncertFile: \t%s\nkeyFile: \t%s\nxor: \t%v\nkey: \t%s\nforwardProxy: \t%v\nforwardProxyEnableAuth: \t%v\nforwardProxyUserAuthFile: \t%v\nforwardProxyUserAuthFileGenerate: \t%v\n", *server, *lAddr, *pAddr, *mTLS, *rootCertFile, *certFile, *keyFile, *xor, *key, *forwardProxy, *forwardProxyEnableAuth, *forwardProxyUserAuthFile, *forwardProxyUserAuthFileGenerate)
+	if *forwardProxy {
+		users := []*User{}
+		if *forwardProxyEnableAuth && len(*forwardProxyUserAuthFile) > 0 {
+			if len(*forwardProxyUserAuthFile) == 0 {
+				log.Fatal("forward proxy user auth json file is empty")
+			}
+			f, err := os.Open(*forwardProxyUserAuthFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = json.NewDecoder(f).Decode(&users)
+			f.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}
+		var err error
+		if len(*certFile) > 0 && len(*keyFile) > 0 {
+			err = http.ListenAndServeTLS(*lAddr, *certFile, *keyFile, &ForwardProxyHandler{EnableAuth: *forwardProxyEnableAuth, Users: users})
+		} else {
+			err = http.ListenAndServe(*lAddr, &ForwardProxyHandler{EnableAuth: *forwardProxyEnableAuth, Users: users})
+		}
+		if err != nil {
+			log.Fatal("http listen err", err)
+		}
+		return
+	} else if *server {
 		runServer()
+		return
+	} else if *forwardProxyUserAuthFileGenerate {
+		data, err := json.MarshalIndent([]User{
+			{
+				Name:       "admin",
+				Password:   "admin",
+				ExpireTime: Time{Time: time.Now().Add(time.Hour * 24 * 8)},
+			},
+		}, "", "  ")
+		if err != nil {
+			log.Fatal("json marshal err", err)
+		}
+		if err = os.WriteFile("./forwardProxyUserAuthFile.json", data, 0644); err != nil {
+			log.Fatal("write file err", err)
+		}
 		return
 	}
 	runClient()

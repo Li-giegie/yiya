@@ -1,11 +1,10 @@
 package main
 
 import (
+	"github.com/Li-giegie/netx"
 	"io"
 	"log"
 	"net"
-
-	"github.com/Li-giegie/netx"
 )
 
 func RunTunnelServer(addr string) error {

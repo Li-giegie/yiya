@@ -3,14 +3,13 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestParseHeader(t *testing.T) {
@@ -116,38 +115,8 @@ func TestTLSClient(t *testing.T) {
 }
 
 func TestName(t *testing.T) {
-	l, err := net.Listen("tcp", "127.0.0.1:9000")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer l.Close()
-	go func() {
-		conn, err := l.Accept()
-		if err != nil {
-			t.Fatal(err)
-		}
-		go func() {
-			defer conn.Close()
-			io.Copy(os.Stdout, conn)
-		}()
-	}()
-
-	dialer := net.Dialer{
-		Timeout:        0,
-		Deadline:       time.Time{},
-		LocalAddr:      nil,
-		DualStack:      false,
-		FallbackDelay:  0,
-		KeepAlive:      time.Second * 5,
-		Resolver:       nil,
-		Cancel:         nil,
-		Control:        nil,
-		ControlContext: nil,
-	}
-	conn, err := dialer.Dial("tcp", "127.0.0.1:9000")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-	time.Sleep(time.Minute)
+	fmt.Println(base64.StdEncoding.EncodeToString([]byte("admin:admin")))
+	//req,_:=http.NewRequest("GET", "/", nil)
+	//
+	//req.SetBasicAuth()
 }

@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/Li-giegie/netx"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/Li-giegie/netx"
 )
 
 func RunTunnelClient(lAddr, rAddr string) error {
