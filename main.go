@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/Li-giegie/netx"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -37,6 +39,9 @@ var (
 
 func main() {
 	flag.Parse()
+	if runtime.GOOS == "windows" {
+		go io.Copy(io.Discard, os.Stdin)
+	}
 	log.Printf("config:\nserver: \t%v\nladdr: \t%s\npAddr: \t%s\nmTLS: \t%v\nrootCertFile: \t%s\ncertFile: \t%s\nkeyFile: \t%s\nxor: \t%v\nkey: \t%s\nforwardProxy: \t%v\nforwardProxyEnableAuth: \t%v\nforwardProxyUserAuthFile: \t%v\nforwardProxyUserAuthFileGenerate: \t%v\n", *server, *lAddr, *pAddr, *mTLS, *rootCertFile, *certFile, *keyFile, *xor, *key, *forwardProxy, *forwardProxyEnableAuth, *forwardProxyUserAuthFile, *forwardProxyUserAuthFileGenerate)
 	if *forwardProxy {
 		users := []*User{}
